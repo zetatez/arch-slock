@@ -18,6 +18,7 @@
 #include <X11/keysym.h>
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
+#include <X11/xpm.h>
 
 #include "arg.h"
 #include "util.h"
@@ -125,6 +126,19 @@ gethash(void)
 }
 
 static void
+showimage(Display *dpy, Window win)
+{
+  XImage *ximage;
+
+  if (!XpmReadFileToImage (dpy, imgpath, &ximage, NULL, NULL)) {
+    XSelectInput(dpy, win, ButtonPressMask|ExposureMask);
+    XMapWindow(dpy, win);
+
+    XPutImage(dpy, win, DefaultGC(dpy, 0), ximage, 0, 0, imgoffsetx, imgoffsety, imgwidth, imgheight);
+  }
+}
+
+static void
 readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
        const char *hash)
 {
@@ -194,6 +208,8 @@ readpw(Display *dpy, struct xrandr *rr, struct lock **locks, int nscreens,
 					                     locks[screen]->win,
 					                     locks[screen]->colors[color]);
 					XClearWindow(dpy, locks[screen]->win);
+          if (showimgonlyatstart != 1)
+            showimage(dpy, locks[screen]->win);
 				}
 				oldc = color;
 			}
@@ -255,6 +271,8 @@ lockscreen(Display *dpy, struct xrandr *rr, int screen)
 	invisible = XCreatePixmapCursor(dpy, lock->pmap, lock->pmap,
 	                                &color, &color, 0, 0);
 	XDefineCursor(dpy, lock->win, invisible);
+
+  showimage(dpy, lock->win);
 
 	/* Try to grab mouse pointer *and* keyboard for 600ms, else fail the lock */
 	for (i = 0, ptgrab = kbgrab = -1; i < 6; i++) {
