@@ -1,4 +1,4 @@
-<!-- ![dwm](https://raw.githubusercontent.com/zetatez/arch-slock/dev/slock.png) -->
+slock
 
 # slock - simple screen locker
 simple screen locker utility for X.
